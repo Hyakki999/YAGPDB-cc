@@ -20,7 +20,7 @@
 {{ $lb := dbTopEntries $dbName 9 $skip }} {{ $board := cslice }}
 
 {{ range $lb }}
-{{ $name := printf "#%d · %s" $count .User.Username }}
+{{ $name := printf "#%d · %s" $count .User.String }}
 {{ $bal := print .Value " 🦆" }}
 {{ $count = add $count 1 }}
 {{ $board = $board.Append (sdict "name" $name "value" $bal "inline" true) }}
