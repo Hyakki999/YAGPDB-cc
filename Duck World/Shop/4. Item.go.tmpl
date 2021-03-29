@@ -1,0 +1,42 @@
+{{/*
+	Item [Added Or Remove A Rank From Your Inventory]
+
+	Recommended
+	- Trigger type: Command
+	- Trigger: `item`
+
+	Copyright: 2021 Hyakki999
+	License: MIT
+	Repository: https://github.com/Hyakki999/YAGPDB-cc
+*/}}
+
+{{/* DON'T CHANGE ANYTHING BELOW */}}
+{{
+	$args := (parseArgs 1
+	"Usage:\n```\nitem <role: Name>```"
+	(carg "string" "roleName")).Get 0
+}}
+
+{{ $inv := cslice }}
+{{ with (dbGet .User.ID "duckRoles").Value }}
+	{{ $inv = $inv.AppendSlice . }}
+	{{ end }}
+
+{{ $rid := 0 }}
+{{ range .Guild.Roles }}
+	{{ if eq .Name $args }}
+		{{ $rid = .ID }}
+		{{ end }}
+	{{ end }}
+
+{{ if in $inv (str $rid) }}
+	{{ if hasRoleID $rid }}
+		{{ removeRoleID $rid }}
+		{{ sendMessage nil (print .User.Username " removed <@&" $rid ">") }}
+	{{ else }}
+		{{ addRoleID $rid }}
+		{{ sendMessage nil (print .User.Username " added <@&" $rid ">") }}
+		{{ end }}
+{{ else }}
+	Couldn't find this role in your inventory
+	{{ end }}

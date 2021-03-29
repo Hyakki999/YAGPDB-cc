@@ -1,0 +1,59 @@
+{{/*
+	Buy [Buy An Item From The Shop In Your Server]
+
+	Recommended
+	- Trigger Type: Command
+	- Trigger: `buy`
+
+    Copyright: 2021 Hyakki999
+    License: MIT
+    Repository: https://github.com/Hyakki999/YAGPDB-cc
+*/}}
+
+{{/* CONFIGURATION VARIABLES */}}
+{{ $dbName := "CREDITS" }} {{/* Name of the Key of your DB that stores users currency amount */}}
+
+{{/* DON'T CHANGE ANYTHING BELOW */}}
+{{
+	$arg := (parseArgs 1
+	"Usage:\n```\nshoprem <item: pos>```"
+	(carg "int" "Item position in shop")).Get 0
+}}
+
+{{ $bal := toInt (dbGet .User.ID $dbName).Value }}
+{{ $pos := sub $arg 1 }}
+{{ $items := cslice }}
+{{ $inv := cslice }}
+{{ $db := sdict }}
+
+{{ with (dbGet .Guild.ID "dshop").Value }}
+	{{ $db = sdict . }}
+	{{ end }}
+
+{{ range $k, $v := $db }}
+	{{ $items = $items.Append (cslice $k $v) }}
+	{{ end }}
+
+{{ with (dbGet .User.ID "duckRoles").Value }}
+	{{ $inv = $inv.AppendSlice . }}
+	{{ end }}
+
+{{ if lt $pos (len $items) }}
+	{{ $k := index $items $pos 0 }}
+	{{ $v := index $items $pos 1 }}
+
+	{{ if ge $bal $v }}
+		{{ if not (in $inv $k) }}
+			{{ $inv = $inv.Append $k }}
+			{{ $silent := dbIncr .User.ID $dbName (mult -1 $v) }}
+			{{ dbSet .User.ID "duckRoles" $inv }}
+			{{ sendMessage nil (print "You have bought <@&" $k "> role.") }}
+		{{ else }}
+			{{ sendMessage nil (print .User.Mention " This item is already in your inventory.") }}
+			{{ end }}
+	{{ else }}
+		{{ sendMessage nil (print .User.Mention " insufficient 🦆") }}
+		{{ end }}
+{{ else }}
+	Invalid position!
+	{{ end }}

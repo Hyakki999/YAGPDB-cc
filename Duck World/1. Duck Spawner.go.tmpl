@@ -1,13 +1,14 @@
 {{/*
-    Name: Duck spawner 
+    Name: Duck spawner
     Author: Dr. Hyakkimaru#6020
-    Trigger Type: Regex
-    Trigger: `\A`
+
+    Recommended
+    - Trigger Type: Regex
+    - Trigger: `\A`
 
     Copyright: 2021 Hyakki999
     License: MIT
     Repository: https://github.com/Hyakki999/YAGPDB-cc
-
 */}}
 
 {{/* Configuration Variable */}}
@@ -22,7 +23,7 @@
 {{ $list := cslice "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" }}
 {{ $d := "" }}
 {{ range seq 0 4 }}
-{{$d = print $d (index $list (randInt (len $list)))}}
+{{ $d = print $d (index $list (randInt (len $list))) }}
 {{ end }}
 
 {{ $base := "https://random-d.uk/api/" }}

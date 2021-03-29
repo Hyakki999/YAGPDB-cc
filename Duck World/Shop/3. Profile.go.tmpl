@@ -1,0 +1,77 @@
+{{/*
+	Profile [Shows Your Or The Mentioned User's Profile]
+
+	Recommended
+	- Trigger Type: Command
+	- Trigger: `profile`
+
+    Copyright: 2021 Hyakki999
+    License: MIT
+    Repository: https://github.com/Hyakki999/YAGPDB-cc
+*/}}
+
+{{ $user := .User }}
+{{ with .CmdArgs }} {{ $user = index . 0 | userArg }} {{ end }}
+
+{{ $un := $user.String }}
+{{ $id := $user.ID }}
+
+{{ $mem := getMember $id }}
+{{ if $mem }}
+	{{ if $mem.Nick }}
+		{{ $un = print $un " | " $mem.Nick }}
+		{{ end }}
+
+	{{ $av := $user.AvatarURL "256" }}
+
+	{{ $tt := div $id 4194304 | mult 1000000 | toDuration | .DiscordEpoch.Add }}
+	{{ $ac := formatTime $tt "02 Jan 06 15:04 MST" }}
+	{{ $ha := humanizeTimeSinceDays $tt }}
+
+	{{ $ttt := $mem.JoinedAt.Parse }}
+	{{ $js := formatTime $ttt "02 Jan 06 15:04 MST" }}
+	{{ $hj := humanizeTimeSinceDays $ttt }}
+
+	{{
+		$fields := (cslice
+		(sdict "name" "ID" "value" (print $id) "inline" false)
+		(sdict "name" "Account Created" "value" (print $ac "\n" $ha) "inline" false)
+		(sdict "name" "Joined Server" "value" (print $js "\n"  $hj) "inline" false)
+	) }}
+	
+	{{ $inv := cslice }}
+	{{ with (dbGet $id "duckRoles").Value }}
+		{{ $inv = $inv.AppendSlice . }}
+		{{ end }}
+
+	{{ $roles := "" }}
+	{{ range $inv }}
+		{{ $roles = printf "%v <@&%v>" $roles . }}
+		{{ end  }}
+
+	{{ if $roles }}
+		{{ $fields = $fields.Append (sdict "name" "Roles" "value" (print $roles) "inline" false) }}
+		{{ end }}
+
+	{{ $status := print "Status: " (index (exec "whois" $id).Fields 6).Value }}
+
+	{{ $col := 0 }} {{ $p := 0 }}
+	{{range .Guild.Roles}}
+		{{if and (in $mem.Roles .ID) (.Color) (lt $p .Position)}}
+			{{$p = .Position}}
+			{{$col = .Color}}
+			{{end}}
+		{{end}}
+
+	{{
+		sendMessage nil (cembed
+		"author" (sdict "name" $un)
+		"description" (str $status)
+		"thumbnail" (sdict "url" $av)
+		"color" $col
+		"fields" $fields
+	) }}
+	
+{{ else }}
+	This member isn't in this server.
+	{{ end }}

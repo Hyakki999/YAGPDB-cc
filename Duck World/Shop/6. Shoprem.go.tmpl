@@ -1,0 +1,38 @@
+{{/*
+	Shoprem [Remove Items From Shop]
+
+	Recommended
+	Trigger type: Regex
+	- Trigger: `\A(?i)(-\s*|<@!?204255221017214977>\s*)shopre?m(\s+|\z)`
+
+	Copyright: 2021 Hyakki999
+	License: MIT
+	Repository: https://github.com/Hyakki999/YAGPDB-cc
+*/}}
+
+{{/* DON'T CHANGE ANYTHING BELOW */}}
+{{
+	$arg := (parseArgs 1
+	"Usage:\n```\nshoprem <item: pos>```"
+	(carg "int" "Item position in shop")).Get 0
+}}
+
+{{ $pos := sub $arg 1 }}
+{{ $items := cslice }}
+{{ $db := sdict }}
+{{ with (dbGet .Guild.ID "dshop").Value }}
+	{{ $db = sdict . }}
+	{{ end }}
+
+{{ range $k, $v := $db }}
+	{{ $items = $items.Append $k }}
+	{{ end }}
+
+{{ if lt $pos (len $items) }}
+	{{ $k := index $items $pos }}
+	{{ $db.Del $k }}
+	{{ dbSet .Guild.ID "dshop" $db }}
+	{{ sendMessage nil (print "<@&" $k "> is removed from the shop.") }}
+{{ else }}
+	Invalid position!
+	{{ end }}

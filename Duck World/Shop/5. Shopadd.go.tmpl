@@ -1,0 +1,45 @@
+{{/*
+	Shopadd [Add Items In Shop]
+
+	Recommended
+	- Trigger type: Command
+	- Trigger: `shopadd`
+
+	Copyright: 2021 Hyakki999
+	License: MIT
+	Repository: https://github.com/Hyakki999/YAGPDB-cc
+*/}}
+
+{{/* DON'T CHANGE ANYTHING BELOW */}}
+{{
+	$args := parseArgs 2
+	"Usage:\n```\nshopadd <role: Name> <price>```"
+	(carg "string" "roleName")
+	(carg "int" "price")
+}}
+
+{{ $rn := $args.Get 0 }}
+{{ $pr := $args.Get 1 }}
+{{ $id := "" }} {{ $db := sdict }}
+
+{{ range $.Guild.Roles }}
+	{{ if eq .Name $rn }}
+		{{ $id = .ID|str }}
+		{{ end }}
+	{{ end }}
+
+{{ if lt $pr 0 }}
+	{{ $pr = 0 }}
+	{{ end }}
+
+{{ with (dbGet .Guild.ID "dshop").Value }}
+	{{ $db = sdict . }}
+	{{ end }}
+
+{{ if $id }}
+	{{ $db.Set $id $pr }}
+	{{ dbSet .Guild.ID "dshop" $db }}
+	{{ sendMessage nil (print "Quack. You have added **`" $rn "`** in the shop.") }}
+{{ else }}
+	Improper RoleName!!!
+	{{ end }}

@@ -1,0 +1,50 @@
+{{/*
+	Shop [View The Shop In Your Server]
+
+	Recommended
+	- Trigger Type: Command
+	- Trigger: `shop`
+
+    Copyright: 2021 Hyakki999
+    License: MIT
+    Repository: https://github.com/Hyakki999/YAGPDB-cc
+*/}}
+
+{{/* DON'T CHANGE ANYTHING BELOW */}}
+{{ $page := 1 }} {{/* Default page to start at */}}
+{{ with (reFind `\d+` (joinStr " " .CmdArgs)) }} {{ $page = . | toInt }} {{ end }}
+{{ $start := mult (sub $page 1) 9 }}
+{{ $stop := mult $page 9 }}
+{{ $sub := cslice }} {{ $main := cslice }}
+{{ $error := "There were no items on that page!" }}
+{{ $users := (dbGet .Guild.ID "dshop").Value }}
+
+{{ if (len $users) }}
+	{{ $pos := 0 }}
+	{{ range $k, $v := $users }}
+		{{- $pos = add $pos 1 }}
+		{{- $sub = $sub.Append (sdict "name" (printf "• **%d.** %d 🦆" $pos $v ) "value" (printf "🪧 You will get <@&%v> role" $k) "inline" true) }}
+		{{ end }}
+	
+	{{ if gt $stop (len $users) }}
+		{{ $stop = len $users }}
+		{{ end }}
+
+	{{ if gt $stop $start }}
+		{{ range (seq $start $stop) }}
+			{{ $main = $main.Append (index $sub .) }}
+			{{ end }}
+		{{
+			sendMessage nil (cembed
+			"title" "🦆 Shop"
+			"thumbnail" (sdict "url" "https://cdn.discordapp.com/attachments/681891928144347210/811521557309816832/IMG_20210217_143310.jpg")
+			"color" 14232643
+			"fields" $main
+			"footer" (sdict "text" (joinStr "" "Page " $page))
+		) }}
+	{{ else }}
+		{{ $error }}
+		{{ end }}
+{{ else }}
+	{{ $error }}
+	{{ end }}
