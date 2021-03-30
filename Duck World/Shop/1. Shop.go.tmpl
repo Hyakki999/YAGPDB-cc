@@ -19,7 +19,10 @@
 {{ $error := "There were no items on that page!" }}
 {{ $users := (dbGet .Guild.ID "dshop").Value }}
 
-{{ if (len $users) }}
+{{ if not (len $users) }}
+	{{ $error }}
+
+{{ else }}
 	{{ $pos := 0 }}
 	{{ range $k, $v := $users }}
 		{{- $pos = add $pos 1 }}
@@ -44,7 +47,6 @@
 		) }}
 	{{ else }}
 		{{ $error }}
-		{{ end }}
-{{ else }}
-	{{ $error }}
+		{{ end }
+
 	{{ end }}
