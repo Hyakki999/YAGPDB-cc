@@ -5,9 +5,9 @@
 	- Trigger Type: Command
 	- Trigger: `shop`
 
-    Copyright: 2021 Hyakki999
-    License: MIT
-    Repository: https://github.com/Hyakki999/YAGPDB-cc
+	Copyright: 2021 Hyakki999
+	License: MIT
+	Repository: https://github.com/Hyakki999/YAGPDB-cc
 */}}
 
 {{/* DON'T CHANGE ANYTHING BELOW */}}
@@ -15,31 +15,60 @@
 {{ with (reFind `\d+` (joinStr " " .CmdArgs)) }} {{ $page = . | toInt }} {{ end }}
 {{ $start := mult (sub $page 1) 9 }}
 {{ $stop := mult $page 9 }}
-{{ $sub := cslice }} {{ $main := cslice }}
+{{ $field := cslice }}
 {{ $error := "There were no items on that page!" }}
-{{ $users := (dbGet .Guild.ID "dshop").Value }}
+{{ $items := (dbGet .Guild.ID "dshop").Value }}
 
-{{ if $users }}
+{{ if $items }}
 	{{ $pos := 0 }}
-	{{ range $k, $v := $users }}
+	{{$dict := sdict $items}}
+	{{$top := 89132758724897682}}
+	{{$print := ""}}
+	{{$seq := len $dict}}
+
+	{{ $old := cslice }}
+	{{ $new := cslice }}
+
+	{{range seq 0 $seq}}
+		{{- $a := 0 -}}
+		{{- $key := "" -}}
+
+		{{- range $k, $v := $dict -}}
+			{{- if and (ge (toInt $v) 0) (le (toInt $v) $top) (ge (toInt $v) $a) (not (in (split $print " ") (title $k))) -}}
+				{{- $key = $k -}}
+				{{- $a = (toInt $v) -}}
+				{{- end -}}
+			{{- end -}}
+
+		{{- $top = ($dict.Get $key|toInt) -}}
 		{{- $pos = add $pos 1 }}
-		{{- $sub = $sub.Append (sdict "name" (printf "• **%d.** %d 🦆" $pos $v ) "value" (printf "🪧 You will get <@&%v> role" $k) "inline" true) }}
-		{{ end }}
-	
-	{{ if gt $stop (len $users) }}
-		{{ $stop = len $users }}
+		{{- $silent := sdict "name" (printf "• **%d.** %d 🦆" $pos $a) "value" (printf "🪧 You will get <@&%v> role" $key) "inline" true }}
+
+		{{- if $new -}}
+			{{- $old = $new -}}
+			{{- end -}}
+		{{- $new = cslice $silent -}}
+		{{- if $old -}}
+			{{- $new = $new.AppendSlice $old -}}
+			{{- end -}}
+
+		{{- $print = print $print " " (title $key) -}}
+		{{- end -}}
+
+	{{ if gt $stop (len $items) }}
+		{{ $stop = len $items }}
 		{{ end }}
 
 	{{ if gt $stop $start }}
 		{{ range (seq $start $stop) }}
-			{{ $main = $main.Append (index $sub .) }}
+			{{ $field = $field.Append (index $new .) }}
 			{{ end }}
 		{{
 			sendMessage nil (cembed
 			"title" "🦆 Shop"
 			"thumbnail" (sdict "url" "https://cdn.discordapp.com/attachments/681891928144347210/811521557309816832/IMG_20210217_143310.jpg")
 			"color" 14232643
-			"fields" $main
+			"fields" $field
 			"footer" (sdict "text" (joinStr "" "Page " $page))
 		) }}
 	{{ else }}
