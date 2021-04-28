@@ -1,40 +1,44 @@
 {{/*
-    Name: Duck spawner
-    Author: Dr. Hyakkimaru#6020
+	Name: Duck spawner
+	Author: Dr. Hyakkimaru#6020
 
-    Recommended
-    - Trigger Type: Regex
-    - Trigger: `\A`
+	Recommended
+	- Trigger Type: Regex
+	- Trigger: `\A`
 
-    Copyright: 2021 Hyakki999
-    License: MIT
-    Repository: https://github.com/Hyakki999/YAGPDB-cc
+	Copyright: 2021 Hyakki999
+	License: MIT
+	Repository: https://github.com/Hyakki999/YAGPDB-cc
 */}}
 
-{{/* Configuration Variable */}}
-{{ $channel := 692684680939700234 }} {{/* Change the number with the channel_ID where ducks will spawn */}}
+{{/* Configuration Section */}}
 
-{{/* Do not change anything brlow */}}
-{{ if not (dbGet 0 "quack") }}
-{{ if not .ExecData}}
-{{ execCC .CCID $channel 100 "data" }}
-{{else}}
+{{/* ID of Your Duck Spawning Channel */}}
+{{ $channel := 692684680939700234 }}
 
-{{ $list := cslice "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" }}
-{{ $d := "" }}
-{{ range seq 0 4 }}
-{{ $d = print $d (index $list (randInt (len $list))) }}
-{{ end }}
+{{/* Do Not Change Anything Below */}}
+{{ if getChannel $channel }}
+	{{ if not (dbGet 0 "quack") }}
+	{{ if not .ExecData }}
+		{{ execCC .CCID $channel 100 "data" }}
 
-{{ $base := "https://random-d.uk/api/" }}
-{{ $link := printf "%s%d.jpg" $base (randInt 1 130) }}
-{{ $gen := print "https://api.memegen.link/images/custom/_/" $d ".png?background=" }}
-{{ $post := print $gen $link }}
+	{{ else }}
+		{{ $list := cslice "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" }}
+		{{ $d := "" }} {{ range seq 0 4 }} {{ $d = print $d (index (shuffle $list) 0) }} {{ end }}
 
-{{ $id := " " }}
-{{ if and $d $post }}
-{{ $id = sendMessageRetID $channel (cembed "color" 0xf8ff02 "title" "Pick the 🦆 up by typing -pick <code>" "image" (sdict "url" $post) ) }}
-{{ end }}
-{{ dbSetExpire 0 "quack" (sdict "1" $d "2" $id "3" $channel) 604800 }}
-{{ end }}
-{{ end }}
+		{{ $duckIMG := print "https://random-d.uk/api/" (randInt 1 192) ".jpg" }}
+		{{ $txtLAYER := print "https://api.memegen.link/images/custom/_/" $d ".png?background=" }}
+		{{ $post := print $txtLAYER $duckIMG }}
+
+		{{ $id := sendMessageRetID $channel (cembed
+			"color" 0xf8ff02
+			"title" "Pick the 🦆 up by typing -pick <code>"
+			"image" (sdict "url" $post) )
+		}}
+		{{ dbSetExpire 0 "quack" (sdict "1" $d "2" $id "3" $channel) 604800 }}
+		{{ end }}
+		{{ end }}
+{{ else }}
+	{{ $id := sendMessageRetID nil (print "CC id: " .CCID "\nProvide a valid channel ID for $channel") }}
+	{{ deleteMessage nil $id 6 }}
+	{{ end }}

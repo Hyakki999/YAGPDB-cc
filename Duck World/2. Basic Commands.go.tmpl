@@ -1,110 +1,108 @@
 {{/*
-    Basic commands [Pick, Currency[$], Timely, Give]
-    Author: Dr. Hyakkimaru#6020
+	Basic commands [Pick, Currency[$], Timely, Give]
+	Author: Dr. Hyakkimaru#6020
 
 	Recommended:
 	- Trigger Type: Regex
 	- Trigger: `\A\-(?i)(timely\z|\$\z|pick|give)`
 
-    Copyright: 2021 Hyakki999
-    License: MIT
-    Repository: https://github.com/Hyakki999/YAGPDB-cc
+	Copyright: 2021 Hyakki999
+	License: MIT
+	Repository: https://github.com/Hyakki999/YAGPDB-cc
 */}}
 
-{{/* CONFIGURATION VARIABLES */}}
-{{ $dbName := "CREDITS" }} {{/* Name of the Key of your DB that stores users currency amount */}}
+{{/* Configuration Section */}}
 
-{{/* Do not change anything below */}}
-{{ $red := 0xff2627 }}
-{{ $gre := 0x76ff03 }}
-{{ $bal := (dbGet .User.ID $dbName).Value|toInt }}
+{{/* DB key that stores user credit */}}
+{{ $dbName := "CREDITS" }}
 
+{{/* Do Not Change Anything Below */}}
+{{ $red := 0xff2627 }} {{ $gre := 0x76ff03 }}
+{{ $bal := toInt (dbGet .User.ID $dbName).Value }}
+
+{{/* Daily */}}
 {{ if eq (lower (index .Args 0) ) "-timely" }}
 	{{ if (dbGet .User.ID "timely") }}
-	{{ $left := humanizeDurationSeconds ((dbGet .User.ID "timely").ExpiresAt.Sub currentTime)}}
-	{{
-		sendMessage nil (cembed
-		"color" $red
-		"title" (print "⚠️" .User.String "\nYou can claim your daily again in\n" $left )
-	) }}
+		{{ $left := humanizeDurationSeconds ((dbGet .User.ID "timely").ExpiresAt.Sub currentTime) }}
+		{{ sendMessage nil (cembed
+			"color" $red
+			"title" (print .User.String "\n🕛 ~~~ **`Daily`**: " $left ))
+		}}
 	{{ else }}
-	{{ $t := dbIncr .User.ID $dbName 30 }}
-	{{
-		sendMessage nil (cembed
-		"color" $gre
-		"title" (print .User.String "\nyou have claimed your daily 30🦆.")
-	) }}
-	{{ dbSetExpire .User.ID "timely" "d" 86400 }}
-	{{end}}
-	
+		{{ $t := dbIncr .User.ID $dbName 30 }}
+		{{ sendMessage nil (cembed
+			"color" $gre
+			"title" (print .User.String "\nyou have claimed your daily 30🦆."))
+		}}
+		{{ dbSetExpire .User.ID "timely" "d" 86400 }}
+		{{end}}
+
+{{/* Balance */}}
 {{else if eq (index .Args 0) "-$" "-currency" }}
 	{{ with .Message.Mentions }}
-	{{ $user := (index . 0).Username }}
-	{{ $bal = (dbGet (index . 0).ID $dbName).Value|toInt }}
-	{{
-		sendMessage nil (cembed
-		"color" $gre
-		"title" (print $user " has " $bal "🦆")
-	) }}
+		{{ $bal = toInt (dbGet (index . 0).ID $dbName).Value }}
+		{{ sendMessage nil (cembed
+			"color" $gre
+			"title" (print (index . 0).Username " has " $bal "🦆"))
+		}}
 	{{ else }}
-	{{
-		sendMessage nil (cembed
-		"color" $gre
-		"title" (print $.User.Username " has " $bal "🦆")
-	) }}
-	{{ end }}
+		{{ sendMessage nil (cembed
+			"color" $gre
+			"title" (print $.User.Username " has " $bal "🦆"))
+		}}
+		{{ end }}
 
+{{/* Pick */}}
 {{ else if eq (lower (index .Args 0) ) "-pick" }}
 	{{ if (dbGet 0 "quack") }}
-	{{ $list := cslice "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" }}
-	{{ $d := "" }}
-	{{ range seq 0 20 }}
-	{{$d = print $d (index $list (randInt (len $list)))}}
-	{{ end }}
+		{{ $g := sdict (dbGet 0 "quack").Value }}
 
-	{{ $g := sdict ((dbGet 0 "quack").Value) }}
-	{{ if eq (len .CmdArgs) 1 }}
-	{{ if eq (upper (index .CmdArgs 0)) ($g.Get "1") }}
-		{{ $duck := randInt 1 8 }}
-		{{
-			editMessage ($g.Get "3") ($g.Get "2") (cembed
-			"color" $gre
-			"title" (print .User.String " has picked " $duck "🦆")
-		) }}
-		{{ $silent := dbIncr .User.ID $dbName $duck }}
-		{{ dbSetExpire 0 "quack" (sdict "1" $d) 120}}
-		{{ deleteMessage ($g.Get "3") ($g.Get "2") 60 }}
-	{{ end }}
-	{{ end }}
+		{{ if .CmdArgs }}
+		{{ if eq (index .CmdArgs 0 | upper) ($g.Get "1") }}
+			{{ $duck := randInt 1 8 }}
+			{{ $silent := dbIncr .User.ID $dbName $duck }}
+
+			{{ if (getMessage ($g.Get "3") ($g.Get "2")) }}
+				{{ editMessage ($g.Get "3") ($g.Get "2") (cembed
+					"color" $gre
+					"title" (print .User.String " has picked " $duck "🦆"))
+				}}
+				{{ deleteMessage ($g.Get "3") ($g.Get "2") 60 }}
+				{{ end }}
+
+			{{ $list := cslice "A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" "1" "2" "3" "4" "5" "6" "7" "8" "9" "0" }}
+			{{ $d := "" }} {{ range seq 0 20 }} {{ $d = print $d (index (shuffle $list) 0) }} {{ end }}
+			{{ dbSetExpire 0 "quack" (sdict "1" $d) 60}}
+
+		{{ end }}
+		{{ end }}
 	{{ end }}
 	{{ deleteTrigger 0 }}
-	
-{{ else if eq (lower (index .Args 0) ) "-give" }}
-	{{ if eq (len .CmdArgs) 2 }}
-	{{ $sender := .User.ID }}
-	{{ $receiver := (toInt (index .CmdArgs 0)) }}
-	{{ if not $receiver }}
-	{{ $receiver = (index .Message.Mentions 0 ).ID }}
-	{{end}}
-	{{ $gift := toInt ( index .CmdArgs 1 ) }}
 
-	{{ if ne $sender $receiver }}
+{{/* Give */}}
+{{ else if eq (lower (index .Args 0) ) "-give" }}
+	{{ $args := parseArgs 2 "-give <user> <amount>"
+		(carg "member" "ID/mention")
+		(carg "int" "Amount")
+	}}
+
+	{{ $sender := .User.ID }}
+	{{ $receiver := ($args.Get 0).User }}
+	{{ $gift := $args.Get 1 }}
+
+	{{ if ne $sender $receiver.ID }}
 		{{ if ge $gift 1 }}
 			{{ if ge $bal $gift }}
-			{{ $silent1 := dbIncr $sender $dbName (mult -1 $gift) }}
-			{{ $silent2 := dbIncr $receiver $dbName $gift }}
-			{{ sendMessage nil (cembed "color" $gre "title" (print .User.String " gifted " $gift "🦆 to " (userArg $receiver).String )) }}
+				{{ $silent1 := dbIncr $sender $dbName (mult -1 $gift) }}
+				{{ $silent2 := dbIncr $receiver.ID $dbName $gift }}
+				{{ sendMessage nil (cembed "color" $gre "title" (print .User.String "\nYou gifted " $gift "🦆 to " $receiver.String)) }}
 			{{ else }}
-			{{ sendMessage nil ( cembed "color" $red "title" ( print .User.String " insufficient 🦆") ) }}
-			{{ end }}
+				{{ sendMessage nil (cembed "color" $red "title" (print .User.String "\ninsufficient 🦆")) }}
+				{{ end }}
 		{{ else }}
-		{{ sendMessage nil ( cembed "color" $red "title" ( print .User.String " Damn. That's a bad move") ) }}
+			{{ sendMessage nil (cembed "color" $red "title" (print .User.String "\nAmount is lower than 1")) }}
+			{{ end }}
+	{{ else }}
+		{{ sendMessage nil (cembed "color" $red "title" (print .User.String "\nYou gifted yourself " (randInt 68 420) "🦆")) }}
 		{{ end }}
-	{{ else }}
-	{{ sendMessage nil ( cembed "color" $red "title" ( print .User.String " You get 68🦆") ) }}
-	{{ end }}
-
-	{{ else }}
-	{{ sendMessage nil ( cembed "color" $red "title" ( print "Usage: -give <user> <amount>" ) ) }}
-	{{ end }}
 {{ end }}
