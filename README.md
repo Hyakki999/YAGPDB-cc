@@ -12,7 +12,7 @@
 ## Information
 This is a repository where I save my custom command codes for YAGPDB.
 ### Discord
-- Username & tag: Dr. Hyakkimaru#6020
+- User: Dr. Hyakkimaru#6020
 - My server: https://discord.gg/wRbzW5Bcqt
 
 ---
