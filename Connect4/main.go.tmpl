@@ -11,6 +11,9 @@
 	Repository: https://github.com/Hyakki999/YAGPDB-cc
 */}}
 
+
+{{/* Do not change anything BELOW unless you know what you are doing */}}
+
 {{ if reFind `\A(?i)(-|<@!?204255221017214977>)\s*Connect4\s*h(elp)?` .Message.Content }}
 {{ $help := cembed "title" "Rules of Connect4" "fields" (cslice (sdict "name" "Objective" "value" "• To be the first player to connect 4 of the same colored discs in a row (either vertically, horizontally, or diagonally)") (sdict "name" "How to play" "value" "• Players must alternate turns, and only one disc can be dropped in each turn.\n• On your turn, react drop one of your colored discs from the top into any of the seven slots.\n• The game ends when there is a 4-in-a-row or a stalemate.\n• React with ❌ to cancel the game.")) "color" 0x333333 }}
 {{ sendMessage nil $help }}
@@ -70,7 +73,7 @@ This slot is already filled up.
 {{- end -}} {{- end -}} {{- end -}}
 {{ $b = print $b "1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣" }}
 
-{{ $e := sdict "author" (sdict "name" (print $t "'s turn") "icon_url" $i) "fields" (cslice (sdict "name" "Connect4" "value" $b) (sdict "name" "> Player 1" "value" $u "inline" false) (sdict "name" "> Player 2" "value" $o)) "footer" (sdict "text" "• Made by Your mom") "color" 0x08ffff }}
+{{ $e := sdict "author" (sdict "name" (print $t "'s turn") "icon_url" $i) "fields" (cslice (sdict "name" "Connect4" "value" $b) (sdict "name" "> Player 1" "value" $u "inline" false) (sdict "name" "> Player 2" "value" $o)) "footer" (sdict "text" "• Run -connect4 help to see the rules") "color" 0x08ffff }}
 
 {{ $won := false }}
 {{ $move := false }}
