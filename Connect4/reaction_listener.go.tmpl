@@ -11,6 +11,8 @@
 	Repository: https://github.com/Hyakki999/YAGPDB-cc
 */}}
 
+{{/* You need to change the main_command_cc_id text inside exexCC with the actual CCID of the Connect4 main command. */}}
+{{/* Don't change anything BELOW unless you know what you are doing */}}
 
 {{ with (dbGet 0 "Connect4").Value }}
 {{ $db := sdict . }}
@@ -38,7 +40,7 @@ Game was cancelled by {{$un}}!
 {{ else if and (eq $u $ID) $col }}
 {{ $data := sdict "col" $col "cid" $cid "mid" $mid }}
 {{ dbSet 0 "Connect4" $db }}
-{{ execCC 59 nil 0 $data }}
+{{ execCC main_command_cc_id nil 0 $data }}
 {{ end }}
 {{ end }}
 {{ end }}
