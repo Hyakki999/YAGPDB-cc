@@ -1,3 +1,16 @@
+{{/*
+	Name: Connect4 command
+	Author: Dr. Hyakkimaru#6020
+
+	Recommended
+	- Trigger Type: Regex
+	- Trigger: `\A(?i)(-|<@!?204255221017214977>)\s*Connect4\s*(h(elp)?)?`
+
+	Copyright: 2021 Hyakki999
+	License: MIT
+	Repository: https://github.com/Hyakki999/YAGPDB-cc
+*/}}
+
 {{ if reFind `\A(?i)(-|<@!?204255221017214977>)\s*Connect4\s*h(elp)?` .Message.Content }}
 {{ $help := cembed "title" "Rules of Connect4" "fields" (cslice (sdict "name" "Objective" "value" "• To be the first player to connect 4 of the same colored discs in a row (either vertically, horizontally, or diagonally)") (sdict "name" "How to play" "value" "• Players must alternate turns, and only one disc can be dropped in each turn.\n• On your turn, react drop one of your colored discs from the top into any of the seven slots.\n• The game ends when there is a 4-in-a-row or a stalemate.\n• React with ❌ to cancel the game.")) "color" 0x333333 }}
 {{ sendMessage nil $help }}
