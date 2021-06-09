@@ -1,0 +1,30 @@
+{{ with (dbGet 0 "Connect4").Value }}
+{{ $db := sdict . }}
+{{ $u := str $.User.ID }}
+{{ $un := $.User.String }}
+{{ $mid := $.Message.ID }}
+{{ $cid := $.Channel.ID }}
+{{ $ID := "" }}
+
+{{ if eq $mid $db.m }}
+{{ if $db.turn }}
+{{ $db.Set "turn" 0 }}
+{{ $ID = $db.uid }}
+{{ else }}
+{{ $db.Set "turn" 1 }}
+{{ $ID = $db.oid }}
+{{ end }}
+
+{{ $emoji := $.Reaction.Emoji.Name }}
+{{ $col := reFind `\d` $emoji|toInt }}
+
+{{ if and (in (cslice $db.uid $db.oid) $u) (eq $emoji "❌") }}
+Game was cancelled by {{$un}}!
+{{ dbDel 0 "Connect4" }}
+{{ else if and (eq $u $ID) $col }}
+{{ $data := sdict "col" $col "cid" $cid "mid" $mid }}
+{{ dbSet 0 "Connect4" $db }}
+{{ execCC 59 nil 0 $data }}
+{{ end }}
+{{ end }}
+{{ end }}
