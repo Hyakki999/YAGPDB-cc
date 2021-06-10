@@ -17,6 +17,8 @@ Features:\
 ---
 ## Installing
 
+These commands aren't standalone. You need add both of these to have a working command.
+
 **Installing main.go.tmpl**\
 • Open the main file\
 • Copy the whole code\
