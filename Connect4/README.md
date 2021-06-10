@@ -17,18 +17,18 @@ Features:\
 ---
 ## Installing
 
-**Installing main.go.tmpl**
-1. Open the main file\
-2. Copy the whole code\
-3. Go to [control panel](https://yagpdb.xyz/manage/) -> core -> custom commands\
-4. Create a custom command\
-5. Paste the code in response\
-6. Now to set up the trigger, read comments at the top of the code\
-7. Save and Exit :)
+**Installing main.go.tmpl**\
+• Open the main file\
+• Copy the whole code\
+• Go to [control panel](https://yagpdb.xyz/manage/) -> core -> custom commands\
+• Create a custom command\
+• Paste the code in response\
+• Now to set up the trigger, read comments at the top of the code\
+• Save and Exit :)
 
 **Installing reaction_listener.go.tmpl**\
-1. Open the reaction_listener file\
-2. Do the same steps as you did earlier
+• Open the reaction_listener file\
+• Do the same steps as you did earlier
 
 ---
 ## Images
