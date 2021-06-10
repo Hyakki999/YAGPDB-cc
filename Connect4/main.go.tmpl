@@ -23,7 +23,7 @@
 
 {{/* Variables | Don't change */}}
 {{ $a := cslice  (cslice "◻️" "◻️" "◻️" "◻️" "◻️" "◻️" "◻️") (cslice "◻️" "◻️" "◻️" "◻️" "◻️" "◻️" "◻️") (cslice "◻️" "◻️" "◻️" "◻️" "◻️" "◻️" "◻️") (cslice "◻️" "◻️" "◻️" "◻️" "◻️" "◻️" "◻️") (cslice "◻️" "◻️" "◻️" "◻️" "◻️" "◻️" "◻️") (cslice "◻️" "◻️" "◻️" "◻️" "◻️" "◻️" "◻️") }}
-{{ $b2 := cslice "1️⃣" "2️⃣" "3️⃣" "4️⃣ "5️⃣" "6️⃣" "7️⃣" }}
+{{ $b2 := cslice "1️⃣" "2️⃣" "3️⃣" "4️⃣" "5️⃣" "6️⃣" "7️⃣" }}
 {{ $u := .User.Username }} {{ $ui := .User.AvatarURL "256" }}
 {{ $oo := ((parseArgs 1 "**Usage:** -connect4 <user>" (carg "member" "")).Get 0).User }}
 {{ $o := $oo.Username }} {{ $oi := $oo.AvatarURL "256" }}
@@ -48,7 +48,7 @@
 {{ if $turn }}
 {{ $p = "⚫" }} {{ $t = $u }} {{ (index ($e.Get "fields") 1).Set "value" (print $u "\n" "Turn: " $p) }} {{ $i = $ui }}
 {{ else }}
-{{ $t = $o }} {{ (index ($e.Get "fields") 1).Set "value" (print $u "\n" "Turn: " $p) }} {{ $i = $oi }}
+{{ $t = $o }} {{ (index ($e.Get "fields") 2).Set "value" (print $u "\n" "Turn: " $p) }} {{ $i = $oi }}
 {{ end }}
 {{ end }}
 
@@ -86,7 +86,7 @@ This slot is filled up. Please choose a different slot.
 {{- else -}}
 {{- $b = print $b " " (index $a $r $c) -}}
 {{- end -}} {{- end -}} {{- end -}}
-{{ $b = print $b $b2.StrippedSlice }}
+{{ $b = print $b $b2.StringSlice }}
 {{ (index ($e.Get "fields") 0).Set "value" $b }}
 
 {{/* Finding match or stalemate */}}
