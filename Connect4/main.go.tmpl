@@ -27,14 +27,15 @@
 {{ $u := .User.Username }} {{ $ui := .User.AvatarURL "256" }}
 {{ $oo := ((parseArgs 1 "**Usage:** -connect4 <user>" (carg "member" "")).Get 0).User }}
 {{ $o := $oo.Username }} {{ $oi := $oo.AvatarURL "256" }}
-{{ $p := "🔴" }} {{ $turn := 1 }} {{ $t := $u }} {{ $i := $ui }}
-{{ $e := sdict "author" (sdict "name" (print $t "'s turn") "icon_url" $i) "fields" (cslice (sdict "name" "Connect4" "value" "") (sdict "name" "> Player 1" "value" $u "inline" false) (sdict "name" "> Player 2" "value" $o)) "footer" (sdict "text" "• Run -connect4 help to see the rules") "color" 0x08ffff }}
+{{ $p := "🔴" }} {{ $turn := 1 }} {{ $t := $u }} {{ $i := $ui }} {{ $link := "" }}
 
 {{/* Retrieving data from database */}}
 {{ $db := sdict }}
 {{ with (dbGet 0 "Connect4").Value }}
 {{ $db = sdict . }}
-{{ $u = $db.u }} {{ $o = $db.o }} {{ $ui = $db.ui }} {{ $oi = $db.oi }}
+{{ $u = $db.u }} {{ $o = $db.o }}
+{{ $ui = $db.ui }} {{ $oi = $db.oi }}
+{{ $turn = $db.turn }}
 
 {{/* Retrieving 2d slice from database */}}
 {{ $db.Set "a" (cslice.AppendSlice $db.a) }}
@@ -43,13 +44,20 @@
 {{- end -}}
 {{ $a = $db.a }}
 
-{{/* Retrieving the player turn */}}
-{{ $turn = $db.turn }}
-{{ if $turn }}
-{{ $p = "⚫" }} {{ $t = $u }} {{ (index ($e.Get "fields") 1).Set "value" (print $u "\n" "Turn: " $p) }} {{ $i = $ui }}
-{{ else }}
-{{ $t = $o }} {{ (index ($e.Get "fields") 2).Set "value" (print $u "\n" "Turn: " $p) }} {{ $i = $oi }}
+{{/* Message link of an existing game */}}
+{{ $cid := $db.c }} {{ $mid := $db.m }}
+{{ if and $cid $mid }}
+{{ $link = print "https://discord.com/channels/" .Guild.ID "/" $cid "/" $mid }}
 {{ end }}
+{{ end }}
+
+{{/* Retrieving the player turn */}}
+{{ if $turn }}
+{{ $p = "🟡" }} {{ $t = $u }} {{ $i = $ui }}
+{{ $u = (print $u "\nTurn: 🔴") }}
+{{ else }}
+{{ $t = $o }} {{ $i = $oi }}
+{{ $o = (print $o "\nTurn: 🟡") }}
 {{ end }}
 
 {{/* Retrieving data for placing a disc */}}
@@ -86,8 +94,10 @@ This slot is filled up. Please choose a different slot.
 {{- else -}}
 {{- $b = print $b " " (index $a $r $c) -}}
 {{- end -}} {{- end -}} {{- end -}}
-{{ $b = print $b $b2.StringSlice }}
-{{ (index ($e.Get "fields") 0).Set "value" $b }}
+{{ $b = print $b (joinStr " " $b2.StringSlice) }}
+
+{{/* Embed */}}
+{{ $e := sdict "author" (sdict "name" (print $t "'s turn") "icon_url" $i) "fields" (cslice (sdict "name" "Connect4" "value" $b "inline" false) (sdict "name" "> Player 1" "value" $u "inline" false) (sdict "name" "> Player 2" "value" $o "inline" true)) "footer" (sdict "text" "• Run -connect4 help to see the rules") "color" 0x08ffff }}
 
 {{/* Finding match or stalemate */}}
 {{ $won := false }}
@@ -156,13 +166,8 @@ This slot is filled up. Please choose a different slot.
 
 {{ else }}
 
-{{/* Sending messages for the existing game */}}
+{{/* Showing existing game */}}
 {{ if dbGet 0 "Connect4" }}
-{{ $cid := $db.c }} {{ $mid := $db.m }}
-{{ $link := "" }}
-{{ if and $cid $mid }}
-{{ $link = print "https://discord.com/channels/" .Guild.ID "/" $cid "/" $mid }}
-{{ end }}
 There's an unfinished game!
 {{ $link }}
 
