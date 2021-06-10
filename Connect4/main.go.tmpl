@@ -74,7 +74,11 @@
 
 {{/* Not changing player for reacting in a filled column */}}
 {{ if $run }}
-{{ if $turn }} {{ $turn = 0 }} {{ else }} {{ $turn = 1 }} {{ end }}
+{{ if $turn }}
+{{ $turn = 0 }} {{ $o = (print $o "\nTurn: 🟡") }} {{ $u = $db.u }}
+{{ else }}
+{{ $turn = 1 }} {{ $u = (print $u "\nTurn: 🔴") }} {{ $o = $db.o }}
+{{ end }}
 {{ $db.Set "turn" $turn }}
 This slot is filled up. Please choose a different slot.
 {{ end }}
@@ -177,8 +181,8 @@ There's an unfinished game!
 {{ $mid := sendMessageRetID nil (cembed $e) }}
 {{ with $mid }}
 {{ addMessageReactions nil . "1️⃣" "2️⃣" "3️⃣" "4️⃣" "5️⃣" "6️⃣" "7️⃣" "❌" }}
-{{ $data := sdict "u" $u "ui" $ui "uid" (str $.User.ID) "o" $o "oi" $oi "oid" (str $oo.ID) "m" . "c" $.Channel.ID "a" $a "turn" $turn }}
+{{ $data := sdict "u" $.User.Username "ui" $ui "uid" (str $.User.ID) "o" $o "oi" $oi "oid" (str $oo.ID) "m" . "c" $.Channel.ID "a" $a "turn" $turn }}
 {{ dbSet 0 "Connect4" $data }}
 {{ end }} {{ end }} {{ end }}
 {{ end }}
-{{ deleteResponse 7 }}
+{{ deleteResponse 10 }}
