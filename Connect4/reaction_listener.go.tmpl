@@ -12,10 +12,6 @@
 */}}
 
 
-{{/* Configuration */}}
-{{ $ccid := 0 }} {{/* Change 0 with the CCID of the main main command */}}
-
-
 {{/* Don't Change Anything BELOW unless you know what you are doing */}}
 {{ with (dbGet 0 "Connect4").Value }}
 {{ $db := sdict . }}
@@ -43,7 +39,7 @@ Game was cancelled by {{$un}}!
 {{ else if and (eq $u $ID) $col }}
 {{ $data := sdict "col" $col "cid" $cid "mid" $mid }}
 {{ dbSet 0 "Connect4" $db }}
-{{ execCC $ccid nil 0 $data }}
+{{ execCC $db.ccid nil 0 $data }}
 {{ end }}
 {{ end }}
 {{ end }}
