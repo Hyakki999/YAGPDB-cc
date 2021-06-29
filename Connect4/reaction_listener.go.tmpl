@@ -15,10 +15,8 @@
 {{/* Don't Change Anything BELOW unless you know what you are doing */}}
 {{ with (dbGet 0 "Connect4").Value }}
 {{ $db := sdict . }}
-{{ $u := str $.User.ID }}
-{{ $un := $.User.String }}
-{{ $mid := $.Message.ID }}
-{{ $cid := $.Channel.ID }}
+{{ $u := str $.User.ID }} {{ $un := $.User.String }}
+{{ $mid := $.Message.ID }} {{ $cid := $.Channel.ID }}
 {{ $ID := "" }}
 
 {{ if eq $mid $db.m }}
@@ -36,10 +34,10 @@
 {{ if and (in (cslice $db.uid $db.oid) $u) (eq $emoji "❌") }}
 Game was cancelled by {{$un}}!
 {{ dbDel 0 "Connect4" }}
+
 {{ else if and (eq $u $ID) $col }}
-{{ $data := sdict "col" $col "cid" $cid "mid" $mid }}
 {{ dbSet 0 "Connect4" $db }}
-{{ execCC $db.ccid nil 0 $data }}
+{{ execCC $db.ccid nil 0 ( sdict "col" $col ) }}
 {{ end }}
 {{ end }}
 {{ end }}
