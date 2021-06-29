@@ -11,8 +11,7 @@ Objective is to be the first to match 4 same coloured disc. Player 1 will get th
 Features:\
 • Play the game by adding reaction\
 • Highlights player turn and move\
-• Get redirect link of an existing game\
-• You can play by yourself
+• Get redirect link of an existing game
 
 ---
 ## Installing
