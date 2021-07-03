@@ -1,0 +1,20 @@
+{{ $board := cslice (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) }}
+{{ $printBoard := "" }}
+
+{{ range $r := seq 0 9 }}
+    {{- if eq $r 3 6 -}}
+        {{- $printBoard = println $printBoard -}}
+    {{- end -}}
+{{- range $c := seq 0 9 -}}
+    {{- if eq $c 8 -}}
+        {{- $printBoard = println $printBoard (index $board $r $c) -}}
+    {{- else if eq $c 3 6 -}}
+        {{- $printBoard = print $printBoard "        " (index $board $r $c) -}}
+    {{- else if eq $c 0 -}}
+        {{- $printBoard = print $printBoard (index $board $r $c) -}}
+    {{- else -}}
+        {{- $printBoard = print $printBoard " " (index $board $r $c) -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+{{ print "```\n" $printBoard "```" }}
