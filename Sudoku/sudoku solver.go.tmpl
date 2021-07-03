@@ -1,12 +1,49 @@
+{{/*
+	Name: Sudoku Solver (not usable)
+	Author: Dr. Hyakkimaru#6020
+
+	Recommended
+	- Trigger Type: Regex
+	- Trigger: `\A(?i)(-|<@!?204255221017214977>)\s*s(udoku)?\s*s(olver)?(\s*|\z)`
+
+	Copyright: 2021 Hyakki999
+	License: MIT
+	Repository: https://github.com/Hyakki999/YAGPDB-cc
+*/}}
+
+
 {{ $board := cslice (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) }}
 {{ $printBoard := "" }}
-{{ $emptySlots := cslice }}
+{{ $emptySlots := cslice }} {{ $atSlot := 0 }}
+{{ $solvable := true }}
+{{ $runValidation := true }} {{ $valid := true }}
+{{ $backtrack := false }} {{ $startFrom := 0 }}
+{{ $row := 0 }} {{ $col := 0 }}
 
 
 {{ range $r := seq 0 9 }}
 {{- range $c := seq 0 9 -}}
     {{- if eq (index $board $r $c) 0 -}}
         {{- $emptySlots = $emptySlots.Append (cslice $r $c) -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
+
+{{ range (seq 0 10000) }}
+{{- if and $solvable $emptySlots -}}
+    {{- $row = index $emptySlots $atSlot 0 -}}
+    {{- $col = index $emptySlots $atSlot 1 -}}
+    {{- range $n := seq 1 10 -}}
+        {{- if $valid -}}
+            {{- (index $board $row).Set $col $n -}}
+            {{- $atSlot = add 1 $atSlot -}}
+            {{- $valid = false -}}
+        {{- end -}}
+    {{- end -}}
+    {{- $valid = true -}}
+    {{- if eq $atSlot (len $emptySlots) -}}
+        {{- $solvable = false -}}
     {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -31,4 +68,3 @@
 
 
 {{ print "```\n" $printBoard "```" }}
-{{ $emptySlots }}
