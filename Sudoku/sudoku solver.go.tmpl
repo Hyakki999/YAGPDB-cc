@@ -1,5 +1,16 @@
 {{ $board := cslice (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) }}
 {{ $printBoard := "" }}
+{{ $emptySlots := cslice }}
+
+
+{{ range $r := seq 0 9 }}
+{{- range $c := seq 0 9 -}}
+    {{- if eq (index $board $r $c) 0 -}}
+        {{- $emptySlots = $emptySlots.Append (cslice $r $c) -}}
+    {{- end -}}
+{{- end -}}
+{{- end -}}
+
 
 {{ range $r := seq 0 9 }}
     {{- if eq $r 3 6 -}}
@@ -17,4 +28,7 @@
     {{- end -}}
 {{- end -}}
 {{- end -}}
+
+
 {{ print "```\n" $printBoard "```" }}
+{{ $emptySlots }}
