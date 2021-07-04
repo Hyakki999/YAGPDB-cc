@@ -16,8 +16,8 @@
 {{ $board := cslice }} {{ $printBoard := "" }}
 {{ $emptySlots := cslice }} {{ $atSlot := 0 }}
 {{ $solvable := true }}
-{{ $runValidation := true }} {{ $valid := true }}
-{{ $backtrack := false }} {{ $startFrom := 0 }}
+{{ $runValidation := true }}
+{{ $valid := true }} {{ $startFrom := 0 }}
 {{ $row := 0 }} {{ $col := 0 }}
 
 {{ with .ExecData }}
