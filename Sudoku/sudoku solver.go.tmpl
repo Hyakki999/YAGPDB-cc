@@ -18,7 +18,8 @@
 {{ $solvable := true }}
 {{ $runValidation := true }}
 {{ $valid := true }} {{ $startFrom := 0 }}
-{{ $row := 0 }} {{ $col := 0 }}
+{{ $row := 0 }} {{ $col := 0 }} {{ $count := 0 }}
+
 
 {{ with .ExecData }}
     {{ $board = $board.AppendSlice .board }}
@@ -27,8 +28,21 @@
     {{ range $i, $v := $emptySlots }} {{- $emptySlots.Set $i (cslice.AppendSlice $v) -}} {{- end -}}
     {{ $atSlot = .at }}
     {{ $startFrom = .startFrom }}
+    {{ $count = add .count 1 }}
 {{ else }}
-    {{ $board = $board.AppendSlice $sudokuBoard }}
+    {{$match:=cslice}}
+    {{if .StrippedMsg}}
+        {{with reFindAllSubmatches `\[(?:\s*\[(?:\s*\d\s*,){8}\s*\d\s*\]\s*,){8}\s*\[(?:\s*\d\s*,){8}\s*\d\s*\]\s*\]` .StrippedMsg}}
+            {{range reFindAllSubmatches `\[\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*\]` (index . 0 0)}}
+                {{- $match = $match.Append (cslice (index . 1) (index . 2) (index . 3) (index . 4) (index . 5)  (index . 6)  (index . 7)  (index . 8)  (index . 9)  ) -}}
+            {{end}}
+        {{else}}Invalid JSON format
+        {{end}}
+    {{else}}No input text provided
+    {{end}}
+
+    {{ $board = $board.AppendSlice $match }}
+    {{ range $y, $v1 := $board }} {{- range $x, $v2 := $v1 -}} {{- (index $board $y).Set $x (toInt $v2) -}} {{- end -}} {{- end -}}
     {{ range $r := seq 0 9 }} {{- range $c := seq 0 9 -}}
     {{- if eq (index $board $r $c) 0 -}}
         {{- $emptySlots = $emptySlots.Append (cslice $r $c) -}}
@@ -38,7 +52,7 @@
 
 
 {{ range (seq 0 300) }}
-{{- if and $solvable $emptySlots -}}
+{{- if and $solvable $emptySlots $board -}}
     {{- $row = index $emptySlots $atSlot 0 -}}
     {{- $col = index $emptySlots $atSlot 1 -}}
     {{- $startRow := sub $row  (mod $row 3) -}}
@@ -68,16 +82,18 @@
     {{- end -}}
 
     {{- $runValidation = true -}}
-    {{- if eq $atSlot (len $emptySlots) -}}
+    {{- if or (gt $count 5) (eq $atSlot (len $emptySlots)) -}}
         {{- $solvable = false -}}
     {{- end -}}
 {{- end -}}
 {{- end -}}
 
-{{ if $solvable }}
-    {{ $data := sdict "board" $board "slots" $emptySlots "at" $atSlot "startFrom" $startFrom }}
+
+{{ if and $board $solvable }}
+    {{ $data := sdict "board" $board "slots" $emptySlots "at" $atSlot "startFrom" $startFrom "count" $count }}
     {{ execCC .CCID nil 6 $data }}
-{{ else }}
+
+{{ else if $board }}
 {{ range $r := seq 0 9 }}
     {{- if eq $r 3 6 -}}
         {{- $printBoard = println $printBoard -}}
@@ -94,5 +110,6 @@
     {{- end -}}
 {{- end -}}
 {{- end -}}
+
     {{ print "```\n" $printBoard "```" }}
 {{- end -}}
