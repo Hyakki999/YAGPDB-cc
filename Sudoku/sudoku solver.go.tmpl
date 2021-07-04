@@ -1,5 +1,5 @@
 {{/*
-	Name: Sudoku Solver (not usable)
+	Name: Sudoku Solver
 	Author: Dr. Hyakkimaru#6020
 
 	Recommended
@@ -12,43 +12,72 @@
 */}}
 
 
-{{ $board := cslice (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) }}
-{{ $printBoard := "" }}
+{{ $sudokuBoard := cslice (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) }}
+{{ $board := cslice }} {{ $printBoard := "" }}
 {{ $emptySlots := cslice }} {{ $atSlot := 0 }}
 {{ $solvable := true }}
 {{ $runValidation := true }} {{ $valid := true }}
 {{ $backtrack := false }} {{ $startFrom := 0 }}
 {{ $row := 0 }} {{ $col := 0 }}
 
-
-{{ range $r := seq 0 9 }}
-{{- range $c := seq 0 9 -}}
+{{ with .ExecData }}
+    {{ $board = $board.AppendSlice .board }}
+    {{ range $i, $v := $board }} {{- $board.Set $i (cslice.AppendSlice $v) -}} {{- end -}}
+    {{ $emptySlots = $emptySlots.AppendSlice .slots }}
+    {{ range $i, $v := $emptySlots }} {{- $emptySlots.Set $i (cslice.AppendSlice $v) -}} {{- end -}}
+    {{ $atSlot = .at }}
+    {{ $startFrom = .startFrom }}
+{{ else }}
+    {{ $board = $board.AppendSlice $sudokuBoard }}
+    {{ range $r := seq 0 9 }} {{- range $c := seq 0 9 -}}
     {{- if eq (index $board $r $c) 0 -}}
         {{- $emptySlots = $emptySlots.Append (cslice $r $c) -}}
     {{- end -}}
-{{- end -}}
+    {{- end -}} {{- end -}}
 {{- end -}}
 
 
-{{ range (seq 0 10000) }}
+{{ range (seq 0 300) }}
 {{- if and $solvable $emptySlots -}}
     {{- $row = index $emptySlots $atSlot 0 -}}
     {{- $col = index $emptySlots $atSlot 1 -}}
-    {{- range $n := seq 1 10 -}}
-        {{- if $valid -}}
-            {{- (index $board $row).Set $col $n -}}
-            {{- $atSlot = add 1 $atSlot -}}
-            {{- $valid = false -}}
+    {{- $startRow := sub $row  (mod $row 3) -}}
+    {{- $startCol := sub $col (mod $col 3) -}}
+
+    {{- range $num := seq 1 10 -}}
+        {{- if and (gt $num $startFrom) $runValidation -}}
+            {{- if eq $num (index $board $row 0) (index $board 0 $col) (index $board $row 1) (index $board 1 $col) (index $board $row 2) (index $board 2 $col) (index $board $row 3) (index $board 3 $col) (index $board $row 4) (index $board 4 $col) (index $board $row 5) (index $board 5 $col) (index $board $row 6) (index $board 6 $col) (index $board $row 7) (index $board 7 $col) (index $board $row 8) (index $board 8 $col) (index $board $startRow $startCol) (index $board $startRow (add 1 $startCol))   (index $board $startRow (add 2 $startCol)) (index $board (add 1 $startRow) $startCol) (index $board (add 1 $startRow) (add 1 $startCol))   (index $board (add 1 $startRow) (add 2 $startCol)) (index $board (add 2 $startRow) $startCol) (index $board (add 2 $startRow) (add 1 $startCol))   (index $board (add 2 $startRow) (add 2 $startCol)) -}}
+                {{- $valid = false -}}
+            {{- else -}}
+                {{- $valid = true -}}
+            {{- end -}}
+
+            {{- if $valid -}}
+                {{- (index $board $row).Set $col $num -}}
+                {{- $atSlot = add 1 $atSlot -}}
+                {{- $runValidation = false -}}
+                {{- $startFrom = 0 -}}
+            {{- end -}}
         {{- end -}}
     {{- end -}}
-    {{- $valid = true -}}
+
+    {{- if and (not $valid) (gt $atSlot 0) -}}
+        {{- (index $board $row).Set $col 0 -}}
+        {{- $atSlot = sub $atSlot 1 -}}
+        {{- $startFrom = index $board (index $emptySlots $atSlot 0) (index $emptySlots $atSlot 1) -}}
+    {{- end -}}
+
+    {{- $runValidation = true -}}
     {{- if eq $atSlot (len $emptySlots) -}}
         {{- $solvable = false -}}
     {{- end -}}
 {{- end -}}
 {{- end -}}
 
-
+{{ if $solvable }}
+    {{ $data := sdict "board" $board "slots" $emptySlots "at" $atSlot "startFrom" $startFrom }}
+    {{ execCC .CCID nil 6 $data }}
+{{ else }}
 {{ range $r := seq 0 9 }}
     {{- if eq $r 3 6 -}}
         {{- $printBoard = println $printBoard -}}
@@ -65,6 +94,5 @@
     {{- end -}}
 {{- end -}}
 {{- end -}}
-
-
-{{ print "```\n" $printBoard "```" }}
+    {{ print "```\n" $printBoard "```" }}
+{{- end -}}
