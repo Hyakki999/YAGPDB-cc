@@ -21,15 +21,14 @@
 
 {{ if $items }}
 	{{ $pos := 0 }}
-	{{$dict := sdict $items}}
-	{{$top := 89132758724897682}}
-	{{$print := ""}}
-	{{$seq := len $dict}}
-
+	{{ $dict := sdict $items }}
+	{{ $top := 89132758724897682 }}
+	{{ $print := "" }}
+	{{ $seq := len $dict }}
 	{{ $old := cslice }}
 	{{ $new := cslice }}
 
-	{{range seq 0 $seq}}
+	{{ range seq 0 $seq }}
 		{{- $a := 0 -}}
 		{{- $key := "" -}}
 
@@ -42,12 +41,13 @@
 
 		{{- $top = ($dict.Get $key|toInt) -}}
 		{{- $pos = add $pos 1 }}
-		{{- $silent := sdict "name" (printf "• **%d.** %d 🦆" $pos $a) "value" (printf "🪧 You will get <@&%v> role" $key) "inline" true }}
+		{{- $msg := sdict "name" (printf "• **%d.** %d 🦆" $pos $a) "value" (printf "🪧 You will get <@&%v> role" $key) "inline" true }}
 
 		{{- if $new -}}
 			{{- $old = $new -}}
 			{{- end -}}
-		{{- $new = cslice $silent -}}
+
+		{{- $new = cslice $msg -}}
 		{{- if $old -}}
 			{{- $new = $new.AppendSlice $old -}}
 			{{- end -}}
