@@ -16,101 +16,98 @@
 {{ $sudokuBoard := cslice (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) (cslice 0 0 0 0 0 0 0 0 0) }}
 {{ $board := cslice }} {{ $printBoard := "" }}
 {{ $emptySlots := cslice }} {{ $atSlot := 0 }}
-{{ $solvable := true }}
-{{ $runValidation := true }}
+{{ $solvable := true }} {{ $runValidation := true }}
 {{ $valid := true }} {{ $startFrom := 0 }}
 {{ $row := 0 }} {{ $col := 0 }} {{ $count := 0 }}
 
 
 {{ with .ExecData }}
-    {{ $board = $board.AppendSlice .board }}
-    {{ range $i, $v := $board }} {{- $board.Set $i (cslice.AppendSlice $v) -}} {{- end -}}
-    {{ $emptySlots = $emptySlots.AppendSlice .slots }}
-    {{ range $i, $v := $emptySlots }} {{- $emptySlots.Set $i (cslice.AppendSlice $v) -}} {{- end -}}
-    {{ $atSlot = .at }}
-    {{ $startFrom = .startFrom }}
-    {{ $count = add .count 1 }}
-{{ else }}
-    {{$match:=cslice}}
-    {{if .StrippedMsg}}
-        {{with reFindAllSubmatches `\[(?:\s*\[(?:\s*\d\s*,){8}\s*\d\s*\]\s*,){8}\s*\[(?:\s*\d\s*,){8}\s*\d\s*\]\s*\]` .StrippedMsg}}
-            {{range reFindAllSubmatches `\[\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*\]` (index . 0 0)}}
-                {{- $match = $match.Append (cslice (index . 1) (index . 2) (index . 3) (index . 4) (index . 5)  (index . 6)  (index . 7)  (index . 8)  (index . 9)  ) -}}
-            {{end}}
-        {{else}}Invalid JSON format
-        {{end}}
-    {{else}}No input text provided
-    {{end}}
+	{{ $board = $board.AppendSlice .board }}
+	{{ range $i, $v := $board }} {{- $board.Set $i (cslice.AppendSlice $v) -}} {{- end -}}
+	
+	{{ $emptySlots = $emptySlots.AppendSlice .slots }}
+	{{ range $i, $v := $emptySlots }} {{- $emptySlots.Set $i (cslice.AppendSlice $v) -}} {{- end -}}
 
-    {{ $board = $board.AppendSlice $match }}
-    {{ range $y, $v1 := $board }} {{- range $x, $v2 := $v1 -}} {{- (index $board $y).Set $x (toInt $v2) -}} {{- end -}} {{- end -}}
-    {{ range $r := seq 0 9 }} {{- range $c := seq 0 9 -}}
-    {{- if eq (index $board $r $c) 0 -}}
-        {{- $emptySlots = $emptySlots.Append (cslice $r $c) -}}
-    {{- end -}}
-    {{- end -}} {{- end -}}
+	{{ $atSlot = .at }} {{ $startFrom = .startFrom }} {{ $count = add .count 1 }}
+	
+{{ else }}
+	{{ if .StrippedMsg }}
+		{{ with reFindAllSubmatches `\[(?:\s*\[(?:\s*\d\s*,){8}\s*\d\s*\]\s*,){8}\s*\[(?:\s*\d\s*,){8}\s*\d\s*\]\s*\]` .StrippedMsg }}
+			{{ range reFindAllSubmatches `\[\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*,\s*(\d)?\s*\]` (index . 0 0) }}
+				{{- $board = $board.Append (cslice (index . 1) (index . 2) (index . 3) (index . 4) (index . 5)  (index . 6)  (index . 7)  (index . 8)  (index . 9)  ) -}}
+			{{end}}
+		{{else}} Invalid JSON format {{end}}
+	{{else}} No input text provided {{end}}
+
+	{{ range $y, $v1 := $board }} {{- range $x, $v2 := $v1 -}}
+		{{- (index $board $y).Set $x (toInt $v2) -}}
+	{{- end -}} {{- end -}}
+
+	{{ range $r := seq 0 (len $board) }} {{- range $c := seq 0 (len $board) -}}
+		{{- if eq (index $board $r $c) 0 -}}
+			{{- $emptySlots = $emptySlots.Append (cslice $r $c) -}}
+		{{- end -}}
+	{{- end -}} {{- end -}}
 {{- end -}}
 
 
 {{ range (seq 0 300) }}
-{{- if and $solvable $emptySlots $board -}}
-    {{- $row = index $emptySlots $atSlot 0 -}}
-    {{- $col = index $emptySlots $atSlot 1 -}}
-    {{- $startRow := sub $row  (mod $row 3) -}}
-    {{- $startCol := sub $col (mod $col 3) -}}
+	{{- if and $solvable $emptySlots $board -}}
+		{{- $row = index $emptySlots $atSlot 0 -}} {{- $col = index $emptySlots $atSlot 1 -}}
+		{{- $startRow := sub $row  (mod $row 3) -}} {{- $startCol := sub $col (mod $col 3) -}}
+		{{- $runValidation = true -}}
 
-    {{- range $num := seq 1 10 -}}
-        {{- if and (gt $num $startFrom) $runValidation -}}
-            {{- if eq $num (index $board $row 0) (index $board 0 $col) (index $board $row 1) (index $board 1 $col) (index $board $row 2) (index $board 2 $col) (index $board $row 3) (index $board 3 $col) (index $board $row 4) (index $board 4 $col) (index $board $row 5) (index $board 5 $col) (index $board $row 6) (index $board 6 $col) (index $board $row 7) (index $board 7 $col) (index $board $row 8) (index $board 8 $col) (index $board $startRow $startCol) (index $board $startRow (add 1 $startCol))   (index $board $startRow (add 2 $startCol)) (index $board (add 1 $startRow) $startCol) (index $board (add 1 $startRow) (add 1 $startCol))   (index $board (add 1 $startRow) (add 2 $startCol)) (index $board (add 2 $startRow) $startCol) (index $board (add 2 $startRow) (add 1 $startCol))   (index $board (add 2 $startRow) (add 2 $startCol)) -}}
-                {{- $valid = false -}}
-            {{- else -}}
-                {{- $valid = true -}}
-            {{- end -}}
+		{{- range $num := seq 1 10 -}}
+			{{- if and (gt $num $startFrom) $runValidation -}}
+				{{- if eq $num (index $board $row 0) (index $board $row 1) (index $board $row 2) (index $board $row 3) (index $board $row 4) (index $board $row 5) (index $board $row 6) (index $board $row 7) (index $board $row 8) -}}
+					{{- $valid = false -}}
+				{{- else if eq $num (index $board 0 $col) (index $board 1 $col) (index $board 2 $col) (index $board 3 $col) (index $board 4 $col) (index $board 5 $col) (index $board 6 $col) (index $board 7 $col) (index $board 8 $col) -}}
+					{{- $valid = false -}}
+				{{- else if eq $num (index $board $startRow $startCol) (index $board $startRow (add 1 $startCol)) (index $board $startRow (add 2 $startCol)) (index $board (add 1 $startRow) $startCol) (index $board (add 1 $startRow) (add 1 $startCol)) (index $board (add 1 $startRow) (add 2 $startCol)) (index $board (add 2 $startRow) $startCol) (index $board (add 2 $startRow) (add 1 $startCol)) (index $board (add 2 $startRow) (add 2 $startCol)) -}}
+					{{- $valid = false -}}
+				{{- else -}}
+					{{- $valid = true -}}
+				{{- end -}}
 
-            {{- if $valid -}}
-                {{- (index $board $row).Set $col $num -}}
-                {{- $atSlot = add 1 $atSlot -}}
-                {{- $runValidation = false -}}
-                {{- $startFrom = 0 -}}
-            {{- end -}}
-        {{- end -}}
-    {{- end -}}
+				{{- if $valid -}}
+					{{- (index $board $row).Set $col $num -}}
+					{{- $atSlot = add 1 $atSlot -}}
+					{{- $runValidation = false -}}
+					{{- $startFrom = 0 -}}
+				{{- end -}}
+			{{- end -}}
+		{{- end -}}
 
-    {{- if and (not $valid) (gt $atSlot 0) -}}
-        {{- (index $board $row).Set $col 0 -}}
-        {{- $atSlot = sub $atSlot 1 -}}
-        {{- $startFrom = index $board (index $emptySlots $atSlot 0) (index $emptySlots $atSlot 1) -}}
-    {{- end -}}
+		{{- if and (not $valid) (gt $atSlot 0) -}}
+			{{- (index $board $row).Set $col 0 -}}
+			{{- $atSlot = sub $atSlot 1 -}}
+			{{- $startFrom = index $board (index $emptySlots $atSlot 0) (index $emptySlots $atSlot 1) -}}
+		{{- end -}}
 
-    {{- $runValidation = true -}}
-    {{- if or (gt $count 5) (eq $atSlot (len $emptySlots)) -}}
-        {{- $solvable = false -}}
-    {{- end -}}
-{{- end -}}
+		{{- if or (gt $count 5) (eq $atSlot (len $emptySlots)) -}}
+			{{- $solvable = false -}}
+		{{- end -}}
+	{{- end -}}
 {{- end -}}
 
 
 {{ if and $board $solvable }}
-    {{ $data := sdict "board" $board "slots" $emptySlots "at" $atSlot "startFrom" $startFrom "count" $count }}
-    {{ execCC .CCID nil 6 $data }}
+	{{ $data := sdict "board" $board "slots" $emptySlots "at" $atSlot "startFrom" $startFrom "count" $count }}
+	{{ execCC .CCID nil 6 $data }}
 
 {{ else if $board }}
-{{ range $r := seq 0 9 }}
-    {{- if eq $r 3 6 -}}
-        {{- $printBoard = println $printBoard -}}
-    {{- end -}}
-{{- range $c := seq 0 9 -}}
-    {{- if eq $c 8 -}}
-        {{- $printBoard = println $printBoard (index $board $r $c) -}}
-    {{- else if eq $c 3 6 -}}
-        {{- $printBoard = print $printBoard "        " (index $board $r $c) -}}
-    {{- else if eq $c 0 -}}
-        {{- $printBoard = print $printBoard (index $board $r $c) -}}
-    {{- else -}}
-        {{- $printBoard = print $printBoard " " (index $board $r $c) -}}
-    {{- end -}}
-{{- end -}}
-{{- end -}}
+	{{ range $r := seq 0 9 }}
+		{{- if eq $r 3 6 -}}
+			{{- $printBoard = println $printBoard -}}
+		{{- end -}}
 
-    {{ print "```\n===============\n  Finished Solving \n===============\n" $printBoard "```" }}
+		{{- range $c := seq 0 9 -}}
+			{{- if eq $c 8 -}} {{- $printBoard = println $printBoard (index $board $r $c) -}}
+			{{- else if eq $c 3 6 -}} {{- $printBoard = print $printBoard "		" (index $board $r $c) -}}
+			{{- else if eq $c 0 -}} {{- $printBoard = print $printBoard (index $board $r $c) -}}
+			{{- else -}} {{- $printBoard = print $printBoard " " (index $board $r $c) -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+	{{ print "```\n===============\n  Finished Solving \n===============\n" $printBoard "```" }}
 {{- end -}}
