@@ -35,14 +35,13 @@
 
 {{ with .CmdArgs}}
 	{{ $bet := index . 0 | toInt }}
-
 	{{ if ge $bet 1 }}
 		{{ if ge $bal $bet }}
 			{{ if lt (randInt 0 11) 7 }}
 				{{ $pos = index (cslice 0.1 0.3 0.5 0.2 | shuffle) 0 }}
 			{{ else }}
 				{{ $pos = index (cslice 1.2 2.4 1.7 1.5 | shuffle) 0 }}
-			{{ end }}
+				{{ end }}
 
 			{{ $arrow := $arrows.Get $pos }}
 			{{ $amount := toInt ( round ( mult ( toFloat $bet ) $pos ) ) }}
@@ -52,10 +51,10 @@
 
 		{{ else }}
 			{{ sendMessage nil ( cembed "color" $red "title" ( print $.User.String $limit ) ) }}
-		{{ end }}
+			{{ end }}
 	{{ else }}
 		{{ sendMessage nil ( cembed "color" $red "title" ( print $.User.String $bb1 ) ) }}
-	{{ end }}
+		{{ end }}
 {{ else }}
 	{{ sendMessage nil ( cembed "color" $red "title" "Wheeloffortune / wheel" "description" $helpText ) }}
-{{ end }}
+	{{ end }}
