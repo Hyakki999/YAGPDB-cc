@@ -11,12 +11,12 @@
 	Repository: https://github.com/Hyakki999/YAGPDB-cc
 */}}
 
-{{/* Configuration Section */}}
+{{/*	Configuration Section	*/}}
 
 {{/* DB key that stores user credit */}}
-{{ $dbName := "CREDITS" }}
+	{{ $dbName := "CREDITS" }}
 
-{{/* Do Not Change Anything Below */}}
+{{/*	Do Not Change Anything Below	*/}}
 {{ $red := 0xff2627 }} {{ $gre := 0x76ff03 }}
 {{ $bal := toInt (dbGet .User.ID $dbName).Value }}
 
@@ -24,13 +24,15 @@
 {{ if eq (lower (index .Args 0) ) "-timely" }}
 	{{ if (dbGet .User.ID "timely") }}
 		{{ $left := humanizeDurationSeconds ((dbGet .User.ID "timely").ExpiresAt.Sub currentTime) }}
-		{{ sendMessage nil (cembed
+		{{
+			sendMessage nil (cembed
 			"color" $red
 			"title" (print .User.String "\n🕛 ~~~ **`Daily`**: " $left ))
 		}}
 	{{ else }}
 		{{ $t := dbIncr .User.ID $dbName 30 }}
-		{{ sendMessage nil (cembed
+		{{
+			sendMessage nil (cembed
 			"color" $gre
 			"title" (print .User.String "\nyou have claimed your daily 30🦆."))
 		}}
@@ -41,12 +43,14 @@
 {{else if eq (index .Args 0) "-$" "-currency" }}
 	{{ with .Message.Mentions }}
 		{{ $bal = toInt (dbGet (index . 0).ID $dbName).Value }}
-		{{ sendMessage nil (cembed
+		{{
+			sendMessage nil (cembed
 			"color" $gre
 			"title" (print (index . 0).Username " has " $bal "🦆"))
 		}}
 	{{ else }}
-		{{ sendMessage nil (cembed
+		{{
+			sendMessage nil (cembed
 			"color" $gre
 			"title" (print $.User.Username " has " $bal "🦆"))
 		}}
@@ -63,7 +67,8 @@
 			{{ $silent := dbIncr .User.ID $dbName $duck }}
 
 			{{ if (getMessage ($g.Get "3") ($g.Get "2")) }}
-				{{ editMessage ($g.Get "3") ($g.Get "2") (cembed
+				{{
+					editMessage ($g.Get "3") ($g.Get "2") (cembed
 					"color" $gre
 					"title" (print .User.String " has picked " $duck "🦆"))
 				}}
@@ -81,7 +86,8 @@
 
 {{/* Give */}}
 {{ else if eq (lower (index .Args 0) ) "-give" }}
-	{{ $args := parseArgs 2 "-give <user> <amount>"
+	{{
+		$args := parseArgs 2 "-give <user> <amount>"
 		(carg "member" "ID/mention")
 		(carg "int" "Amount")
 	}}
